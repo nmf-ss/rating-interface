@@ -11,291 +11,69 @@
             --border: #d1d5db;
             --text: #1f2937;
             --white: #ffffff;
-            --green-tint: #dcfce7; /* Faint green for rated rows */
+            --green-tint: #dcfce7;
             --green-border: #86efac;
         }
-
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            margin: 0;
-            padding: 10px;
-            background-color: var(--bg-light);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            height: 100vh;
-            overflow: hidden; 
-        }
-
-        /* --- UPPER HALF --- */
-        .upper-half {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        .top-bar {
-            display: flex;
-            gap: 5px;
-            height: 55px;
-            flex-shrink: 0;
-        }
-
-        .top-item {
-            flex: 1; 
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .top-item select, .top-item input {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent;
-            text-align: center;
-            text-align-last: center;
-            outline: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-            padding: 0 2px;
-            -webkit-appearance: none;
-        }
-
-        .number-scroller {
-            display: flex;
-            overflow-x: auto;
-            width: 100%;
-            gap: 10px;
-            padding-bottom: 5px;
-            flex-shrink: 0;
-            scrollbar-width: none; 
-        }
+        /* ... (Previous Styles Remain Exact Same) ... */
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { margin: 0; padding: 10px; background-color: var(--bg-light); color: var(--text); display: flex; flex-direction: column; gap: 15px; height: 100vh; overflow: hidden; }
+        .upper-half { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; min-height: 0; }
+        .top-bar { display: flex; gap: 5px; height: 55px; flex-shrink: 0; }
+        .top-item { flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .top-item select, .top-item input { width: 100%; height: 100%; border: none; background: transparent; text-align: center; text-align-last: center; outline: none; font-size: 0.85rem; font-weight: 600; color: var(--text); padding: 0 2px; -webkit-appearance: none; }
+        .number-scroller { display: flex; overflow-x: auto; width: 100%; gap: 10px; padding-bottom: 5px; flex-shrink: 0; scrollbar-width: none; }
         .number-scroller::-webkit-scrollbar { display: none; }
-
-        .scroll-item {
-            flex: 0 0 60px;
-            height: 60px;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.4rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .scroll-item.selected {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .text-display {
-            flex-grow: 1; 
-            width: 98%;
-            align-self: center;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            font-size: 1.6rem;
-            line-height: 1.4;
-            overflow-y: auto;
-            display: flex;
-            align-items: center; 
-            justify-content: center;
-            text-align: center;
-            color: #4b5563;
-        }
-
-        hr {
-            border: 0;
-            border-top: 2px solid #e5e7eb;
-            margin: 0;
-            flex-shrink: 0;
-        }
-
-        /* --- LOWER HALF --- */
-        .lower-half {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow: hidden;
-            background: var(--white);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 10px;
-            /* Padding bottom handled by spacer element now */
-        }
-
-        .table-wrapper {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            text-align: center;
-            padding: 12px 5px;
-            border-bottom: 1px solid var(--bg-light);
-            font-size: 1.4rem;
-            transition: background-color 0.3s;
-        }
-
-        thead th {
-            position: sticky;
-            top: 0;
-            background: var(--white);
-            z-index: 1;
-            color: #6b7280;
-            font-size: 1rem;
-            text-transform: uppercase;
-        }
-
-        .row-num {
-            font-weight: bold;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-            background: #f9fafb;
-        }
-        
-        tr.active-row .row-num {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        /* VISUAL FEEDBACK: Rated Row (Green) */
-        tr.row-rated td {
-            background-color: var(--green-tint);
-            border-bottom-color: var(--green-border);
-        }
-
-        select.rating-dropdown {
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            width: 80px;
-            font-size: 1.4rem;
-            background-color: white;
-            text-align: center;
-        }
-
-        /* Controls */
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .control-btn {
-            flex: 1;
-            padding: 15px;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 0 10px;
-            cursor: pointer;
-            line-height: 1;
-        }
-        .control-btn:active {
-            background: var(--bg-light);
-        }
-        
-        .status-msg {
-            font-size: 1rem;
-            color: #6b7280;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        /* FOOTER SPACER (To clear nav bars) */
-        .footer-spacer {
-            height: 40px; 
-            width: 100%;
-            flex-shrink: 0;
-        }
-
+        .scroll-item { flex: 0 0 60px; height: 60px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; cursor: pointer; transition: background 0.2s; }
+        .scroll-item.selected { background-color: var(--primary); color: white; border-color: var(--primary); }
+        .text-display { flex-grow: 1; width: 98%; align-self: center; background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-size: 1.6rem; line-height: 1.4; overflow-y: auto; display: flex; align-items: center; justify-content: center; text-align: center; color: #4b5563; }
+        hr { border: 0; border-top: 2px solid #e5e7eb; margin: 0; flex-shrink: 0; }
+        .lower-half { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 10px; }
+        .table-wrapper { flex: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: center; padding: 12px 5px; border-bottom: 1px solid var(--bg-light); font-size: 1.4rem; transition: background-color 0.3s; }
+        thead th { position: sticky; top: 0; background: var(--white); z-index: 1; color: #6b7280; font-size: 1rem; text-transform: uppercase; }
+        .row-num { font-weight: bold; cursor: pointer; padding: 10px; border-radius: 8px; background: #f9fafb; }
+        tr.active-row .row-num { background-color: var(--primary); color: white; }
+        tr.row-rated td { background-color: var(--green-tint); border-bottom-color: var(--green-border); }
+        select.rating-dropdown { padding: 8px; border-radius: 6px; border: 1px solid var(--border); width: 80px; font-size: 1.4rem; background-color: white; text-align: center; }
+        .controls { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .control-btn { flex: 1; padding: 15px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0 10px; cursor: pointer; line-height: 1; }
+        .control-btn:active { background: var(--bg-light); }
+        .status-msg { font-size: 1rem; color: #6b7280; font-weight: 500; white-space: nowrap; }
+        .footer-spacer { height: 40px; width: 100%; flex-shrink: 0; }
     </style>
 </head>
 <body>
 
     <div class="upper-half">
         <div class="top-bar">
-            <div class="top-item">
-                <select id="eventSelect"><option value="" disabled selected>Event</option></select>
-            </div>
-            <div class="top-item">
-                <select id="setSelect" disabled><option value="" disabled selected>Set</option></select>
-            </div>
-            <div class="top-item">
-                <input type="text" id="raterInput" placeholder="Rater">
-            </div>
-            <div class="top-item">
-                <input type="date" id="dateInput">
-            </div>
+            <div class="top-item"><select id="eventSelect"><option value="" disabled selected>Event</option></select></div>
+            <div class="top-item"><select id="setSelect" disabled><option value="" disabled selected>Set</option></select></div>
+            <div class="top-item"><input type="text" id="raterInput" placeholder="Rater"></div>
+            <div class="top-item"><input type="date" id="dateInput"></div>
         </div>
-
         <div class="number-scroller" id="topScroller"></div>
-
         <div class="text-display" id="mainScreen">Waiting for data...</div>
     </div>
-
     <hr>
-
     <div class="lower-half">
         <div class="table-wrapper">
             <table>
-                <thead>
-                    <tr>
-                        <th style="width: 30%">Chest #</th>
-                        <th style="width: 70%">Rating</th>
-                    </tr>
-                </thead>
-                <tbody id="ratingTableBody">
-                    </tbody>
+                <thead><tr><th style="width: 30%">Chest #</th><th style="width: 70%">Rating</th></tr></thead>
+                <tbody id="ratingTableBody"></tbody>
             </table>
         </div>
-
         <div class="controls">
             <button class="control-btn" onclick="adjustRating(-1)">-</button>
             <span class="status-msg" id="selectedRowMsg">Select Chest</span>
             <button class="control-btn" onclick="adjustRating(1)">+</button>
         </div>
     </div>
-    
     <div class="footer-spacer"></div>
 
     <script>
         // ***********************************************
-        // UPDATE THIS WITH YOUR NEW DEPLOYMENT URL
+        // UPDATE THIS WITH YOUR NEW URL (ENDING IN /exec)
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwOFOpRXvcyKmCREUkBcOHw1auLR5de0f5URQxYhcFWuuDzBu7mR88cO9OFKMtJeSd-/exec"; 
         // ***********************************************
 
@@ -313,27 +91,27 @@
         let sheetData = []; 
         let currentEvent = null;
         let currentSet = null;
-        let currentQuestionId = null; // This is the ID from the sheet
+        let currentQuestionId = null;
         let currentQuestionText = null;
         let selectedChestId = null;
 
-        // --- Init ---
+        // NEW: Local Cache to store ratings during the session
+        // Structure: { "QuestionID": { "ChestID": "Rating" } }
+        let ratingsCache = {};
+
         window.onload = function() {
             initTable();      
             fetchSheetData(); 
-            
-            // Auto-set date to today
-            dateInput.valueAsDate = new Date();
+            dateInput.valueAsDate = new Date(); // Default to today
         };
 
-        // --- Data Fetching ---
+        // --- Fetch Data ---
         function fetchSheetData() {
             mainScreen.textContent = "Loading Questions...";
-            if(SHEET_API_URL.includes("YOUR_UPDATED")) {
-                mainScreen.textContent = "Please update SHEET_API_URL in code.";
+            if(SHEET_API_URL.includes("YOUR_NEW")) {
+                mainScreen.textContent = "Please set API URL in code.";
                 return;
             }
-
             fetch(SHEET_API_URL)
             .then(res => res.json())
             .then(data => {
@@ -347,7 +125,7 @@
             });
         }
 
-        // --- Top Bar Logic ---
+        // --- Logic ---
         function populateEventDropdown() {
             const uniqueEvents = [...new Set(sheetData.map(item => item.event))];
             eventSelect.innerHTML = '<option value="" disabled selected>Event</option>';
@@ -366,6 +144,7 @@
             topScroller.innerHTML = "";
             setSelect.disabled = false;
             setSelect.value = "";
+            ratingsCache = {}; // Optional: Clear cache on Event change? Usually safer.
         });
 
         function populateSets(evtName) {
@@ -394,16 +173,19 @@
                 const div = document.createElement('div');
                 div.className = 'scroll-item';
                 div.textContent = q.id;
+                
                 div.onclick = function() {
+                    // 1. Visual Selection
                     document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
                     this.classList.add('selected');
                     
+                    // 2. Set State
                     currentQuestionId = q.id;
                     currentQuestionText = q.text;
                     updateScreenText(q.text);
-                    
-                    // Reset table visual state if needed (optional)
-                    // Currently we keep ratings visual until page refresh
+
+                    // 3. Load Saved State for this Question
+                    loadStateForQuestion(q.id);
                 };
                 topScroller.appendChild(div);
             });
@@ -413,18 +195,47 @@
             mainScreen.textContent = text;
         }
 
+        // --- NEW: STATE MANAGEMENT (Issue 1 Solved) ---
+
+        function loadStateForQuestion(qId) {
+            // 1. Reset Table Visuals first
+            for (let i = 1; i <= 40; i++) {
+                const row = document.getElementById(`row-${i}`);
+                const select = document.getElementById(`select-${i}`);
+                
+                row.classList.remove('row-rated');
+                select.value = 0; // Reset dropdown
+            }
+
+            // 2. Apply cached ratings if they exist
+            if (ratingsCache[qId]) {
+                const savedRatings = ratingsCache[qId];
+                for (const [chestId, rating] of Object.entries(savedRatings)) {
+                    if (rating > 0) {
+                        const row = document.getElementById(`row-${chestId}`);
+                        const select = document.getElementById(`select-${chestId}`);
+                        
+                        select.value = rating;
+                        row.classList.add('row-rated');
+                    }
+                }
+            }
+            
+            selectedRowMsg.textContent = "Select Chest";
+            selectedChestId = null;
+            document.querySelectorAll('tr').forEach(row => row.classList.remove('active-row'));
+        }
+
         // --- Table & Rating Logic ---
         function initTable() {
             for (let i = 1; i <= 40; i++) {
                 const tr = document.createElement('tr');
                 tr.id = `row-${i}`;
                 
-                // Chest Number
                 const tdNum = document.createElement('td');
                 tdNum.innerHTML = `<div class="row-num">${i}</div>`;
                 tdNum.onclick = () => selectChest(i);
                 
-                // Dropdown
                 const tdRate = document.createElement('td');
                 const select = document.createElement('select');
                 select.className = 'rating-dropdown';
@@ -436,7 +247,6 @@
                     select.appendChild(opt);
                 }
                 
-                // Trigger save on manual dropdown change
                 select.addEventListener('change', () => {
                    handleRatingChange(i, select.value); 
                 });
@@ -468,66 +278,75 @@
 
             if (newVal >= 0 && newVal <= 5) {
                 dropdown.value = newVal;
-                // Trigger Save logic
                 handleRatingChange(selectedChestId, newVal);
             }
         }
 
-        // --- VISUAL FEEDBACK & SAVING ---
         function handleRatingChange(chestId, ratingVal) {
+            // Validation
+            if (!currentEvent || !currentSet || !currentQuestionId) {
+                alert("Select Event/Set/Question first.");
+                document.getElementById(`select-${chestId}`).value = 0; // Reset
+                return;
+            }
+
             const row = document.getElementById(`row-${chestId}`);
             
-            // 1. Visual Feedback (Green Row)
+            // 1. Visual Feedback
             if (parseInt(ratingVal) > 0) {
                 row.classList.add('row-rated');
             } else {
                 row.classList.remove('row-rated');
             }
 
-            // 2. Validate Data before sending
-            const rater = raterInput.value.trim();
-            const date = dateInput.value;
-            
-            if (!currentEvent || !currentSet || !currentQuestionId) {
-                alert("Please select Event, Set and Question first.");
-                return;
+            // 2. Update Cache (So it saves when we switch questions)
+            if (!ratingsCache[currentQuestionId]) {
+                ratingsCache[currentQuestionId] = {};
             }
-            if (!rater || !date) {
-                alert("Please enter Rater Name and Date.");
-                return;
-            }
+            ratingsCache[currentQuestionId][chestId] = ratingVal;
 
             // 3. Send to Google Sheet
             sendRatingToSheet(chestId, ratingVal);
         }
 
         function sendRatingToSheet(chestId, rating) {
+            const rater = raterInput.value.trim();
+            const date = dateInput.value;
+
+            if (!rater || !date) {
+                selectedRowMsg.textContent = "Enter Rater/Date!";
+                selectedRowMsg.style.color = 'red';
+                return;
+            }
+
             selectedRowMsg.textContent = "Saving...";
+            selectedRowMsg.style.color = 'orange';
             
             const payload = {
                 event: currentEvent,
                 set: currentSet,
                 id: currentQuestionId,
-                questionText: currentQuestionText, // Send text just in case needed for new row
-                date: dateInput.value,
-                rater: raterInput.value,
+                questionText: currentQuestionText,
+                date: date,
+                rater: rater,
                 chestId: chestId,
                 rating: rating
             };
 
             fetch(SHEET_API_URL, {
                 method: "POST",
-                mode: "no-cors", // Standard for Google Script simple POSTs
+                mode: "no-cors", 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                // Success (no-cors means we can't read response, but we assume success)
                 selectedRowMsg.textContent = `Chest #${chestId} Saved`;
+                selectedRowMsg.style.color = 'green';
             })
             .catch(err => {
                 console.error(err);
                 selectedRowMsg.textContent = "Error Saving";
+                selectedRowMsg.style.color = 'red';
             });
         }
     </script>
