@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Large Scale Mobile Interface</title>
+    <style>
+        :root {
+            --primary: #3b82f6; 
+            --bg-light: #f3f4f6;
+            --border: #d1d5db;
+            --text: #1f2937;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-light);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* No body scroll */
+        }
+
+        /* =========================================
+           UPPER HALF (50% of screen)
+           Contains: Top Bar, Scroller, Text Display
+           ========================================= */
+        .upper-half {
+            flex: 1; /* Takes 50% relative to lower-half */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+            min-height: 0; /* Critical for nested flex scrolling */
+        }
+
+        /* 1. Top Bar */
+        .top-bar {
+            display: flex;
+            gap: 8px;
+            height: 50px; /* Kept compact to save room for the big screen */
+            flex-shrink: 0;
+        }
+
+        .box-side {
+            flex: 1;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .box-mid {
+            flex: 2;
+            background: #e0e7ff; 
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            outline: none;
+            font-size: 1rem; /* Slightly larger input text */
+        }
+
+        /* 2. Scroller */
+        .number-scroller {
+            display: flex;
+            overflow-x: auto;
+            width: 100%;
+            gap: 10px;
+            padding-bottom: 5px;
+            flex-shrink: 0;
+            scrollbar-width: none; 
+        }
+        .number-scroller::-webkit-scrollbar { display: none; }
+
+        .scroll-item {
+            flex: 0 0 50px; /* Wider to match scale */
+            height: 50px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem; /* Larger font */
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .scroll-item.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* 3. Text Display (The "Screen") */
+        .text-display {
+            /* Fills remaining space in upper-half */
+            flex-grow: 1; 
+            width: 90%; /* Slightly wider */
+            align-self: center;
+            
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            
+            /* SCALING: 2x Size */
+            font-size: 1.6rem; 
+            line-height: 1.4;
+            
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+            text-align: center;
+            color: #4b5563;
+        }
+
+        /* Divider */
+        hr {
+            border: 0;
+            border-top: 2px solid #e5e7eb;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        /* =========================================
+           LOWER HALF (50% of screen)
+           Contains: Table, Controls
+           ========================================= */
+        .lower-half {
+            flex: 1; /* Takes remaining 50% */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 10px;
+        }
+
+        .table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* SCALING: Table Header and Cells */
+        th, td {
+            text-align: center;
+            padding: 15px 5px; /* Increased padding */
+            border-bottom: 1px solid var(--bg-light);
+            font-size: 1.5rem; /* 2x Scale */
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            z-index: 1;
+            color: #6b7280;
+            font-size: 1.2rem; /* Headers slightly smaller than data */
+        }
+
+        .row-num {
+            font-weight: bold;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        tr.active-row .row-num {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* SCALING: Dropdown */
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            width: 100px; /* Wider */
+            font-size: 1.5rem; /* 2x Scale */
+            background-color: white;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        /* SCALING: Buttons */
+        .control-btn {
+            flex: 1;
+            padding: 15px; /* Larger touch area */
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 2rem; /* HUGE buttons */
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0 10px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .control-btn:active {
+            background: var(--bg-light);
+        }
+        
+        .status-msg {
+            font-size: 1.2rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="upper-half">
+        <div class="top-bar">
+            <div class="box-side">
+                <input type="text" placeholder="Text">
+            </div>
+            <div class="box-mid">
+                STATUS OK
+            </div>
+            <div class="box-side">
+                <input type="date">
+            </div>
+        </div>
+
+        <div class="number-scroller" id="topScroller">
+            </div>
+
+        <div class="text-display">
+            Select #
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="lower-half">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30%">ID</th>
+                        <th style="width: 70%">Rate (0-5)</th>
+                    </tr>
+                </thead>
+                <tbody id="ratingTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="adjustRating(-1)">-</button>
+            <span class="status-msg" id="selectedRowMsg">No ID</span>
+            <button class="control-btn" onclick="adjustRating(1)">+</button>
+        </div>
+    </div>
+
+    <script>
+        const topScroller = document.getElementById('topScroller');
+        const tableBody = document.getElementById('ratingTableBody');
+        let selectedTableId = null;
+
+        // Generate Numbers 1-40 for Top Scroller
+        for (let i = 1; i <= 40; i++) {
+            const div = document.createElement('div');
+            div.className = 'scroll-item';
+            div.textContent = i;
+            div.onclick = function() {
+                document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
+                this.classList.add('selected');
+                // Updated text to demonstrate scaling
+                document.querySelector('.text-display').textContent = `Big Screen Text: ${i}`;
+            };
+            topScroller.appendChild(div);
+        }
+
+        // Generate Table Rows 1-40
+        for (let i = 1; i <= 40; i++) {
+            const tr = document.createElement('tr');
+            tr.id = `row-${i}`;
+            
+            // Column 1
+            const tdNum = document.createElement('td');
+            tdNum.innerHTML = `<div class="row-num">${i}</div>`;
+            tdNum.onclick = () => selectTableTx(i);
+            
+            // Column 2
+            const tdRate = document.createElement('td');
+            const select = document.createElement('select');
+            select.id = `select-${i}`;
+            
+            for(let j=0; j<=5; j++){
+                const opt = document.createElement('option');
+                opt.value = j;
+                opt.textContent = j;
+                select.appendChild(opt);
+            }
+            tdRate.appendChild(select);
+
+            tr.appendChild(tdNum);
+            tr.appendChild(tdRate);
+            tableBody.appendChild(tr);
+        }
+
+        function selectTableTx(id) {
+            selectedTableId = id;
+            document.querySelectorAll('tr').forEach(row => row.classList.remove('active-row'));
+            document.getElementById(`row-${id}`).classList.add('active-row');
+            document.getElementById('selectedRowMsg').textContent = `ID ${id}`;
+        }
+
+        function adjustRating(change) {
+            if (!selectedTableId) {
+                return; // fail silently or alert
+            }
+
+            const dropdown = document.getElementById(`select-${selectedTableId}`);
+            let currentVal = parseInt(dropdown.value);
+            let newVal = currentVal + change;
+
+            if (newVal >= 0 && newVal <= 5) {
+                dropdown.value = newVal;
+            }
+        }
+    </script>
+</body>
+</html>
