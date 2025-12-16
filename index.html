@@ -297,68 +297,166 @@
     </div>
 
     <script>
+        // ***********************************************
+        // CONFIGURATION
+        // ***********************************************
+        // PASTE YOUR GOOGLE WEB APP URL HERE
+        const SHEET_API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
+        // ***********************************************
+    
+        // --- DOM Elements ---
+        const eventSelect = document.getElementById('eventSelect');
+        const setSelect = document.getElementById('setSelect');
         const topScroller = document.getElementById('topScroller');
+        const mainScreen = document.getElementById('mainScreen');
         const tableBody = document.getElementById('ratingTableBody');
-        let selectedTableId = null;
-
-        // Generate Numbers 1-40 for Top Scroller
-        for (let i = 1; i <= 40; i++) {
-            const div = document.createElement('div');
-            div.className = 'scroll-item';
-            div.textContent = i;
-            div.onclick = function() {
-                document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
-                this.classList.add('selected');
-                // Updated text to demonstrate scaling
-                document.querySelector('.text-display').textContent = `Big Screen Text: ${i}`;
-            };
-            topScroller.appendChild(div);
+        const selectedRowMsg = document.getElementById('selectedRowMsg');
+    
+        // State
+        let sheetData = []; // Now empty, will be filled from web
+        let currentEvent = null;
+        let currentSet = null;
+        let currentQuestionId = null;
+        let selectedChestId = null;
+    
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            initTable(); // Draw the 1-40 table immediately
+            fetchSheetData(); // Start loading data from Google
+        };
+    
+        // 1. Fetch Data from Google Sheet
+        function fetchSheetData() {
+            mainScreen.textContent = "Loading Data...";
+            
+            fetch(SHEET_API_URL)
+            .then(response => response.json())
+            .then(data => {
+                sheetData = data;
+                populateEventDropdown();
+                mainScreen.textContent = "Select Event";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mainScreen.textContent = "Error loading data. Check console.";
+            });
         }
-
-        // Generate Table Rows 1-40
-        for (let i = 1; i <= 40; i++) {
-            const tr = document.createElement('tr');
-            tr.id = `row-${i}`;
+    
+        // 2. Populate Event Dropdown
+        function populateEventDropdown() {
+            // Get unique events
+            const uniqueEvents = [...new Set(sheetData.map(item => item.event))];
             
-            // Column 1
-            const tdNum = document.createElement('td');
-            tdNum.innerHTML = `<div class="row-num">${i}</div>`;
-            tdNum.onclick = () => selectTableTx(i);
-            
-            // Column 2
-            const tdRate = document.createElement('td');
-            const select = document.createElement('select');
-            select.id = `select-${i}`;
-            
-            for(let j=0; j<=5; j++){
+            // Clear old options (keep the default disabled one)
+            eventSelect.innerHTML = '<option value="" disabled selected>Event</option>';
+    
+            uniqueEvents.forEach(evt => {
                 const opt = document.createElement('option');
-                opt.value = j;
-                opt.textContent = j;
-                select.appendChild(opt);
-            }
-            tdRate.appendChild(select);
-
-            tr.appendChild(tdNum);
-            tr.appendChild(tdRate);
-            tableBody.appendChild(tr);
+                opt.value = evt;
+                opt.textContent = evt;
+                eventSelect.appendChild(opt);
+            });
         }
-
-        function selectTableTx(id) {
-            selectedTableId = id;
+    
+        // 3. Initialize Table (Chest Numbers 1-40)
+        function initTable() {
+            for (let i = 1; i <= 40; i++) {
+                const tr = document.createElement('tr');
+                tr.id = `row-${i}`;
+                
+                const tdNum = document.createElement('td');
+                tdNum.innerHTML = `<div class="row-num">${i}</div>`;
+                tdNum.onclick = () => selectChest(i);
+                
+                const tdRate = document.createElement('td');
+                const select = document.createElement('select');
+                select.className = 'rating-dropdown';
+                select.id = `select-${i}`;
+                for(let j=0; j<=5; j++){
+                    const opt = document.createElement('option');
+                    opt.value = j;
+                    opt.textContent = j;
+                    select.appendChild(opt);
+                }
+                tdRate.appendChild(select);
+                tr.appendChild(tdNum);
+                tr.appendChild(tdRate);
+                tableBody.appendChild(tr);
+            }
+        }
+    
+        // --- LOGIC: TOP BAR CASCADING ---
+    
+        eventSelect.addEventListener('change', (e) => {
+            currentEvent = e.target.value;
+            populateSets(currentEvent);
+            mainScreen.textContent = "Select Set";
+            topScroller.innerHTML = ""; 
+            setSelect.disabled = false;
+            // Reset Set Dropdown
+            setSelect.value = "";
+        });
+    
+        function populateSets(evtName) {
+            setSelect.innerHTML = '<option value="" disabled selected>Set</option>';
+            const relevantRows = sheetData.filter(d => d.event === evtName);
+            const uniqueSets = [...new Set(relevantRows.map(d => d.set))];
+            
+            uniqueSets.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                setSelect.appendChild(opt);
+            });
+        }
+    
+        setSelect.addEventListener('change', (e) => {
+            currentSet = e.target.value;
+            populateQuestions(currentEvent, currentSet);
+            mainScreen.textContent = "Select Question #";
+        });
+    
+        function populateQuestions(evt, set) {
+            topScroller.innerHTML = ""; 
+            
+            const questions = sheetData.filter(d => d.event === evt && d.set === set);
+            
+            questions.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'scroll-item';
+                div.textContent = q.id;
+                div.onclick = function() {
+                    // Visuals
+                    document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Logic
+                    currentQuestionId = q.id;
+                    updateScreenText(q.text);
+                };
+                topScroller.appendChild(div);
+            });
+        }
+    
+        function updateScreenText(text) {
+            mainScreen.textContent = text;
+        }
+    
+        // --- LOGIC: TABLE SELECTION & RATING ---
+    
+        function selectChest(id) {
+            selectedChestId = id;
             document.querySelectorAll('tr').forEach(row => row.classList.remove('active-row'));
             document.getElementById(`row-${id}`).classList.add('active-row');
-            document.getElementById('selectedRowMsg').textContent = `ID ${id}`;
+            selectedRowMsg.textContent = `Chest #${id}`;
         }
-
+    
         function adjustRating(change) {
-            if (!selectedTableId) {
-                return; // fail silently or alert
-            }
-
-            const dropdown = document.getElementById(`select-${selectedTableId}`);
+            if (!selectedChestId) return;
+    
+            const dropdown = document.getElementById(`select-${selectedChestId}`);
             let currentVal = parseInt(dropdown.value);
             let newVal = currentVal + change;
-
             if (newVal >= 0 && newVal <= 5) {
                 dropdown.value = newVal;
             }
