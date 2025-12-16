@@ -11,6 +11,8 @@
             --border: #d1d5db;
             --text: #1f2937;
             --white: #ffffff;
+            --green-tint: #dcfce7; /* Faint green for rated rows */
+            --green-border: #86efac;
         }
 
         * {
@@ -30,7 +32,7 @@
             overflow: hidden; 
         }
 
-        /* --- UPPER HALF (50%) --- */
+        /* --- UPPER HALF --- */
         .upper-half {
             flex: 1;
             display: flex;
@@ -40,7 +42,6 @@
             min-height: 0;
         }
 
-        /* 1. Top Bar (4 Elements) */
         .top-bar {
             display: flex;
             gap: 5px;
@@ -49,7 +50,7 @@
         }
 
         .top-item {
-            flex: 1; /* Equal width for all 4 items */
+            flex: 1; 
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -57,12 +58,9 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            position: relative;
         }
 
-        /* Styling inputs/selects to fill the boxes */
-        .top-item select, 
-        .top-item input {
+        .top-item select, .top-item input {
             width: 100%;
             height: 100%;
             border: none;
@@ -70,14 +68,13 @@
             text-align: center;
             text-align-last: center;
             outline: none;
-            font-size: 0.85rem; /* Kept small to fit 4 items */
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
             padding: 0 2px;
-            -webkit-appearance: none; /* Remove default styling for cleaner look */
+            -webkit-appearance: none;
         }
 
-        /* 2. Scroller (Question IDs) */
         .number-scroller {
             display: flex;
             overflow-x: auto;
@@ -90,7 +87,7 @@
         .number-scroller::-webkit-scrollbar { display: none; }
 
         .scroll-item {
-            flex: 0 0 60px; /* Nice big touch targets */
+            flex: 0 0 60px;
             height: 60px;
             background: var(--white);
             border: 1px solid var(--border);
@@ -101,7 +98,7 @@
             font-weight: bold;
             font-size: 1.4rem;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
         }
         .scroll-item.selected {
             background-color: var(--primary);
@@ -109,7 +106,6 @@
             border-color: var(--primary);
         }
 
-        /* 3. Screen (Large Question Display) */
         .text-display {
             flex-grow: 1; 
             width: 98%;
@@ -118,7 +114,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
-            font-size: 1.6rem; /* Large text */
+            font-size: 1.6rem;
             line-height: 1.4;
             overflow-y: auto;
             display: flex;
@@ -135,7 +131,7 @@
             flex-shrink: 0;
         }
 
-        /* --- LOWER HALF (50%) --- */
+        /* --- LOWER HALF --- */
         .lower-half {
             flex: 1;
             display: flex;
@@ -146,6 +142,7 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             padding: 10px;
+            /* Padding bottom handled by spacer element now */
         }
 
         .table-wrapper {
@@ -163,6 +160,7 @@
             padding: 12px 5px;
             border-bottom: 1px solid var(--bg-light);
             font-size: 1.4rem;
+            transition: background-color 0.3s;
         }
 
         thead th {
@@ -186,6 +184,12 @@
         tr.active-row .row-num {
             background-color: var(--primary);
             color: white;
+        }
+
+        /* VISUAL FEEDBACK: Rated Row (Green) */
+        tr.row-rated td {
+            background-color: var(--green-tint);
+            border-bottom-color: var(--green-border);
         }
 
         select.rating-dropdown {
@@ -229,41 +233,39 @@
             font-size: 1rem;
             color: #6b7280;
             font-weight: 500;
+            white-space: nowrap;
         }
+
+        /* FOOTER SPACER (To clear nav bars) */
+        .footer-spacer {
+            height: 40px; 
+            width: 100%;
+            flex-shrink: 0;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="upper-half">
-        
         <div class="top-bar">
             <div class="top-item">
-                <select id="eventSelect">
-                    <option value="" disabled selected>Event</option>
-                </select>
+                <select id="eventSelect"><option value="" disabled selected>Event</option></select>
             </div>
-            
             <div class="top-item">
-                <select id="setSelect" disabled>
-                    <option value="" disabled selected>Set</option>
-                </select>
+                <select id="setSelect" disabled><option value="" disabled selected>Set</option></select>
             </div>
-            
             <div class="top-item">
                 <input type="text" id="raterInput" placeholder="Rater">
             </div>
-            
             <div class="top-item">
                 <input type="date" id="dateInput">
             </div>
         </div>
 
-        <div class="number-scroller" id="topScroller">
-            </div>
+        <div class="number-scroller" id="topScroller"></div>
 
-        <div class="text-display" id="mainScreen">
-            Waiting for data...
-        </div>
+        <div class="text-display" id="mainScreen">Waiting for data...</div>
     </div>
 
     <hr>
@@ -288,63 +290,66 @@
             <button class="control-btn" onclick="adjustRating(1)">+</button>
         </div>
     </div>
+    
+    <div class="footer-spacer"></div>
 
     <script>
         // ***********************************************
-        // CONFIGURATION: PASTE YOUR APP SCRIPT URL HERE
+        // UPDATE THIS WITH YOUR NEW DEPLOYMENT URL
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwOFOpRXvcyKmCREUkBcOHw1auLR5de0f5URQxYhcFWuuDzBu7mR88cO9OFKMtJeSd-/exec"; 
         // ***********************************************
 
         // DOM Elements
         const eventSelect = document.getElementById('eventSelect');
         const setSelect = document.getElementById('setSelect');
+        const raterInput = document.getElementById('raterInput');
+        const dateInput = document.getElementById('dateInput');
         const topScroller = document.getElementById('topScroller');
         const mainScreen = document.getElementById('mainScreen');
         const tableBody = document.getElementById('ratingTableBody');
         const selectedRowMsg = document.getElementById('selectedRowMsg');
 
-        // State Variables
+        // State
         let sheetData = []; 
         let currentEvent = null;
         let currentSet = null;
-        let currentQuestionId = null;
+        let currentQuestionId = null; // This is the ID from the sheet
+        let currentQuestionText = null;
         let selectedChestId = null;
 
-        // --- Initialization ---
+        // --- Init ---
         window.onload = function() {
-            initTable();      // Draw the 1-40 Chest numbers immediately
-            fetchSheetData(); // Start fetching Google Sheet data
+            initTable();      
+            fetchSheetData(); 
+            
+            // Auto-set date to today
+            dateInput.valueAsDate = new Date();
         };
 
-        // --- 1. Fetch Data ---
+        // --- Data Fetching ---
         function fetchSheetData() {
             mainScreen.textContent = "Loading Questions...";
-            
-            // If you don't have the URL yet, this check prevents a crash
-            if(SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE") {
-                mainScreen.textContent = "Please set SHEET_API_URL in code.";
+            if(SHEET_API_URL.includes("YOUR_UPDATED")) {
+                mainScreen.textContent = "Please update SHEET_API_URL in code.";
                 return;
             }
 
             fetch(SHEET_API_URL)
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 sheetData = data;
                 populateEventDropdown();
                 mainScreen.textContent = "Select an Event";
             })
-            .catch(error => {
-                console.error('Error:', error);
+            .catch(err => {
+                console.error(err);
                 mainScreen.textContent = "Error loading data.";
             });
         }
 
-        // --- 2. Top Panel Logic ---
-        
+        // --- Top Bar Logic ---
         function populateEventDropdown() {
-            // Extract unique events from data
             const uniqueEvents = [...new Set(sheetData.map(item => item.event))];
-            
             eventSelect.innerHTML = '<option value="" disabled selected>Event</option>';
             uniqueEvents.forEach(evt => {
                 const opt = document.createElement('option');
@@ -354,22 +359,19 @@
             });
         }
 
-        // Event Selection Change
         eventSelect.addEventListener('change', (e) => {
             currentEvent = e.target.value;
             populateSets(currentEvent);
             mainScreen.textContent = "Select a Set";
-            topScroller.innerHTML = ""; // Clear old questions
+            topScroller.innerHTML = "";
             setSelect.disabled = false;
-            setSelect.value = ""; // Reset set selection
+            setSelect.value = "";
         });
 
         function populateSets(evtName) {
             setSelect.innerHTML = '<option value="" disabled selected>Set</option>';
-            // Filter data by event, then get unique sets
             const relevantRows = sheetData.filter(d => d.event === evtName);
             const uniqueSets = [...new Set(relevantRows.map(d => d.set))];
-            
             uniqueSets.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s;
@@ -378,7 +380,6 @@
             });
         }
 
-        // Set Selection Change
         setSelect.addEventListener('change', (e) => {
             currentSet = e.target.value;
             populateQuestions(currentEvent, currentSet);
@@ -387,7 +388,6 @@
 
         function populateQuestions(evt, set) {
             topScroller.innerHTML = ""; 
-            
             const questions = sheetData.filter(d => d.event === evt && d.set === set);
             
             questions.forEach(q => {
@@ -395,13 +395,15 @@
                 div.className = 'scroll-item';
                 div.textContent = q.id;
                 div.onclick = function() {
-                    // UI: Highlight selected question
                     document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
                     this.classList.add('selected');
                     
-                    // Logic: Show text
                     currentQuestionId = q.id;
+                    currentQuestionText = q.text;
                     updateScreenText(q.text);
+                    
+                    // Reset table visual state if needed (optional)
+                    // Currently we keep ratings visual until page refresh
                 };
                 topScroller.appendChild(div);
             });
@@ -411,32 +413,35 @@
             mainScreen.textContent = text;
         }
 
-        // --- 3. Table & Rating Logic ---
-
+        // --- Table & Rating Logic ---
         function initTable() {
             for (let i = 1; i <= 40; i++) {
                 const tr = document.createElement('tr');
                 tr.id = `row-${i}`;
                 
-                // Column 1: Chest Number
+                // Chest Number
                 const tdNum = document.createElement('td');
                 tdNum.innerHTML = `<div class="row-num">${i}</div>`;
                 tdNum.onclick = () => selectChest(i);
                 
-                // Column 2: Rating Dropdown
+                // Dropdown
                 const tdRate = document.createElement('td');
                 const select = document.createElement('select');
                 select.className = 'rating-dropdown';
                 select.id = `select-${i}`;
-                // Options 0 to 5
                 for(let j=0; j<=5; j++){
                     const opt = document.createElement('option');
                     opt.value = j;
                     opt.textContent = j;
                     select.appendChild(opt);
                 }
-                tdRate.appendChild(select);
+                
+                // Trigger save on manual dropdown change
+                select.addEventListener('change', () => {
+                   handleRatingChange(i, select.value); 
+                });
 
+                tdRate.appendChild(select);
                 tr.appendChild(tdNum);
                 tr.appendChild(tdRate);
                 tableBody.appendChild(tr);
@@ -452,7 +457,6 @@
 
         function adjustRating(change) {
             if (!selectedChestId) {
-                // Flash the message to indicate error
                 selectedRowMsg.style.color = 'red';
                 setTimeout(() => selectedRowMsg.style.color = '#6b7280', 500);
                 return;
@@ -462,10 +466,69 @@
             let currentVal = parseInt(dropdown.value);
             let newVal = currentVal + change;
 
-            // Clamp between 0 and 5
             if (newVal >= 0 && newVal <= 5) {
                 dropdown.value = newVal;
+                // Trigger Save logic
+                handleRatingChange(selectedChestId, newVal);
             }
+        }
+
+        // --- VISUAL FEEDBACK & SAVING ---
+        function handleRatingChange(chestId, ratingVal) {
+            const row = document.getElementById(`row-${chestId}`);
+            
+            // 1. Visual Feedback (Green Row)
+            if (parseInt(ratingVal) > 0) {
+                row.classList.add('row-rated');
+            } else {
+                row.classList.remove('row-rated');
+            }
+
+            // 2. Validate Data before sending
+            const rater = raterInput.value.trim();
+            const date = dateInput.value;
+            
+            if (!currentEvent || !currentSet || !currentQuestionId) {
+                alert("Please select Event, Set and Question first.");
+                return;
+            }
+            if (!rater || !date) {
+                alert("Please enter Rater Name and Date.");
+                return;
+            }
+
+            // 3. Send to Google Sheet
+            sendRatingToSheet(chestId, ratingVal);
+        }
+
+        function sendRatingToSheet(chestId, rating) {
+            selectedRowMsg.textContent = "Saving...";
+            
+            const payload = {
+                event: currentEvent,
+                set: currentSet,
+                id: currentQuestionId,
+                questionText: currentQuestionText, // Send text just in case needed for new row
+                date: dateInput.value,
+                rater: raterInput.value,
+                chestId: chestId,
+                rating: rating
+            };
+
+            fetch(SHEET_API_URL, {
+                method: "POST",
+                mode: "no-cors", // Standard for Google Script simple POSTs
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                // Success (no-cors means we can't read response, but we assume success)
+                selectedRowMsg.textContent = `Chest #${chestId} Saved`;
+            })
+            .catch(err => {
+                console.error(err);
+                selectedRowMsg.textContent = "Error Saving";
+            });
         }
     </script>
 </body>
