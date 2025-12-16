@@ -7,7 +7,6 @@
     <style>
         :root {
             --primary: #3b82f6; 
-            --success: #10b981; /* Green for Submit */
             --bg-light: #f3f4f6;
             --border: #d1d5db;
             --text: #1f2937;
@@ -45,43 +44,12 @@
         select.rating-dropdown { padding: 8px; border-radius: 6px; border: 1px solid var(--border); width: 80px; font-size: 1.4rem; background-color: white; text-align: center; }
         
         /* CONTROLS AREA */
-        .controls-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .adjust-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .control-btn { flex: 1; padding: 15px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0 5px; cursor: pointer; line-height: 1; }
+        .controls { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .control-btn { flex: 1; padding: 15px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; font-size: 2rem; font-weight: bold; color: var(--primary); margin: 0 10px; cursor: pointer; line-height: 1; }
         .control-btn:active { background: var(--bg-light); }
-        
-        /* NEW SUBMIT BUTTON */
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--success);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .submit-btn:active { transform: translateY(1px); opacity: 0.9; }
-
         .status-msg { font-size: 1rem; color: #6b7280; font-weight: 500; white-space: nowrap; }
         
-        /* EXTRA WIDE FOOTER SPACER */
+        /* FOOTER SPACER */
         .footer-spacer { height: 120px; width: 100%; flex-shrink: 0; }
     </style>
 </head>
@@ -108,14 +76,10 @@
             </table>
         </div>
 
-        <div class="controls-container">
-            <div class="adjust-controls">
-                <button class="control-btn" onclick="adjustRating(-1)">-</button>
-                <span class="status-msg" id="selectedRowMsg">Select Chest</span>
-                <button class="control-btn" onclick="adjustRating(1)">+</button>
-            </div>
-            
-            <button class="submit-btn" onclick="submitCurrentRating()">SUBMIT</button>
+        <div class="controls">
+            <button class="control-btn" onclick="adjustRating(-1)">-</button>
+            <span class="status-msg" id="selectedRowMsg">Select Chest</span>
+            <button class="control-btn" onclick="adjustRating(1)">+</button>
         </div>
     </div>
     
@@ -127,7 +91,6 @@
         const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwOFOpRXvcyKmCREUkBcOHw1auLR5de0f5URQxYhcFWuuDzBu7mR88cO9OFKMtJeSd-/exec"; 
         // ***********************************************
 
-        // DOM Elements
         const eventSelect = document.getElementById('eventSelect');
         const setSelect = document.getElementById('setSelect');
         const raterInput = document.getElementById('raterInput');
@@ -137,13 +100,14 @@
         const tableBody = document.getElementById('ratingTableBody');
         const selectedRowMsg = document.getElementById('selectedRowMsg');
 
-        // State
         let sheetData = []; 
         let currentEvent = null;
         let currentSet = null;
         let currentQuestionId = null;
         let currentQuestionText = null;
         let selectedChestId = null;
+        
+        // Local Cache to keep UI in sync when switching questions
         let ratingsCache = {};
 
         window.onload = function() {
@@ -152,7 +116,6 @@
             dateInput.valueAsDate = new Date();
         };
 
-        // --- Fetch Data ---
         function fetchSheetData() {
             mainScreen.textContent = "Loading Questions...";
             if(SHEET_API_URL.includes("YOUR_NEW")) {
@@ -172,7 +135,6 @@
             });
         }
 
-        // --- Logic ---
         function populateEventDropdown() {
             const uniqueEvents = [...new Set(sheetData.map(item => item.event))];
             eventSelect.innerHTML = '<option value="" disabled selected>Event</option>';
@@ -191,7 +153,7 @@
             topScroller.innerHTML = "";
             setSelect.disabled = false;
             setSelect.value = "";
-            ratingsCache = {}; 
+            ratingsCache = {}; // Reset cache on event change
         });
 
         function populateSets(evtName) {
@@ -220,7 +182,6 @@
                 const div = document.createElement('div');
                 div.className = 'scroll-item';
                 div.textContent = q.id;
-                
                 div.onclick = function() {
                     document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
                     this.classList.add('selected');
@@ -238,8 +199,8 @@
             mainScreen.textContent = text;
         }
 
-        // --- State Management ---
         function loadStateForQuestion(qId) {
+            // Reset Table
             for (let i = 1; i <= 40; i++) {
                 const row = document.getElementById(`row-${i}`);
                 const select = document.getElementById(`select-${i}`);
@@ -247,6 +208,7 @@
                 select.value = 0; 
             }
 
+            // Load Cache
             if (ratingsCache[qId]) {
                 const savedRatings = ratingsCache[qId];
                 for (const [chestId, rating] of Object.entries(savedRatings)) {
@@ -263,7 +225,6 @@
             document.querySelectorAll('tr').forEach(row => row.classList.remove('active-row'));
         }
 
-        // --- Table & Rating Logic ---
         function initTable() {
             for (let i = 1; i <= 40; i++) {
                 const tr = document.createElement('tr');
@@ -284,7 +245,7 @@
                     select.appendChild(opt);
                 }
                 
-                // On Dropdown Change -> Just update visual state, DO NOT SUBMIT
+                // AUTOSAVE TRIGGER: Dropdown Change
                 select.addEventListener('change', () => {
                    handleRatingChange(i, select.value); 
                 });
@@ -315,6 +276,7 @@
 
             if (newVal >= 0 && newVal <= 5) {
                 dropdown.value = newVal;
+                // AUTOSAVE TRIGGER: Button Press
                 handleRatingChange(selectedChestId, newVal);
             }
         }
@@ -329,20 +291,18 @@
                 row.classList.remove('row-rated');
             }
 
-            // 2. Update Local Cache
+            // 2. Update Cache
             if (!ratingsCache[currentQuestionId]) {
                 ratingsCache[currentQuestionId] = {};
             }
             ratingsCache[currentQuestionId][chestId] = ratingVal;
+
+            // 3. AUTOSAVE CALL
+            sendRatingToSheet(chestId, ratingVal);
         }
 
-        // --- NEW SUBMIT FUNCTION ---
-        function submitCurrentRating() {
+        function sendRatingToSheet(chestId, rating) {
             // Validation
-            if (!selectedChestId) {
-                alert("Please select a Chest number first.");
-                return;
-            }
             if (!currentEvent || !currentSet || !currentQuestionId) {
                 alert("Please select Event, Set, and Question.");
                 return;
@@ -354,15 +314,9 @@
                 return;
             }
 
-            // Get Value
-            const dropdown = document.getElementById(`select-${selectedChestId}`);
-            const ratingVal = dropdown.value;
-
-            // UI Feedback
             selectedRowMsg.textContent = "Saving...";
             selectedRowMsg.style.color = 'orange';
 
-            // Payload
             const payload = {
                 event: currentEvent,
                 set: currentSet,
@@ -370,11 +324,10 @@
                 questionText: currentQuestionText,
                 date: date,
                 rater: rater,
-                chestId: selectedChestId,
-                rating: ratingVal
+                chestId: chestId,
+                rating: rating
             };
 
-            // Send
             fetch(SHEET_API_URL, {
                 method: "POST",
                 mode: "no-cors", 
@@ -382,7 +335,7 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                selectedRowMsg.textContent = `Saved Chest #${selectedChestId}`;
+                selectedRowMsg.textContent = `Saved Chest #${chestId}`;
                 selectedRowMsg.style.color = 'green';
             })
             .catch(err => {
