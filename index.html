@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Large Scale Mobile Interface</title>
+    <title>Rating App</title>
     <style>
         :root {
             --primary: #3b82f6; 
@@ -26,65 +26,58 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            height: 100vh; /* Full viewport height */
-            overflow: hidden; /* No body scroll */
+            height: 100vh;
+            overflow: hidden; 
         }
 
-        /* =========================================
-           UPPER HALF (50% of screen)
-           Contains: Top Bar, Scroller, Text Display
-           ========================================= */
+        /* --- UPPER HALF (50%) --- */
         .upper-half {
-            flex: 1; /* Takes 50% relative to lower-half */
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
             overflow: hidden;
-            min-height: 0; /* Critical for nested flex scrolling */
+            min-height: 0;
         }
 
-        /* 1. Top Bar */
+        /* 1. Top Bar (4 Elements) */
         .top-bar {
             display: flex;
-            gap: 8px;
-            height: 50px; /* Kept compact to save room for the big screen */
+            gap: 5px;
+            height: 55px;
             flex-shrink: 0;
         }
 
-        .box-side {
-            flex: 1;
+        .top-item {
+            flex: 1; /* Equal width for all 4 items */
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            overflow: hidden;
+            position: relative;
         }
 
-        .box-mid {
-            flex: 2;
-            background: #e0e7ff; 
-            border: 1px solid #c7d2fe;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        input {
+        /* Styling inputs/selects to fill the boxes */
+        .top-item select, 
+        .top-item input {
             width: 100%;
+            height: 100%;
             border: none;
             background: transparent;
             text-align: center;
+            text-align-last: center;
             outline: none;
-            font-size: 1rem; /* Slightly larger input text */
+            font-size: 0.85rem; /* Kept small to fit 4 items */
+            font-weight: 600;
+            color: var(--text);
+            padding: 0 2px;
+            -webkit-appearance: none; /* Remove default styling for cleaner look */
         }
 
-        /* 2. Scroller */
+        /* 2. Scroller (Question IDs) */
         .number-scroller {
             display: flex;
             overflow-x: auto;
@@ -97,18 +90,18 @@
         .number-scroller::-webkit-scrollbar { display: none; }
 
         .scroll-item {
-            flex: 0 0 50px; /* Wider to match scale */
-            height: 50px;
+            flex: 0 0 60px; /* Nice big touch targets */
+            height: 60px;
             background: var(--white);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2rem; /* Larger font */
+            font-size: 1.4rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
         .scroll-item.selected {
             background-color: var(--primary);
@@ -116,24 +109,18 @@
             border-color: var(--primary);
         }
 
-        /* 3. Text Display (The "Screen") */
+        /* 3. Screen (Large Question Display) */
         .text-display {
-            /* Fills remaining space in upper-half */
             flex-grow: 1; 
-            width: 90%; /* Slightly wider */
+            width: 98%;
             align-self: center;
-            
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
-            
-            /* SCALING: 2x Size */
-            font-size: 1.6rem; 
+            font-size: 1.6rem; /* Large text */
             line-height: 1.4;
-            
             overflow-y: auto;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             align-items: center; 
             justify-content: center;
@@ -141,7 +128,6 @@
             color: #4b5563;
         }
 
-        /* Divider */
         hr {
             border: 0;
             border-top: 2px solid #e5e7eb;
@@ -149,12 +135,9 @@
             flex-shrink: 0;
         }
 
-        /* =========================================
-           LOWER HALF (50% of screen)
-           Contains: Table, Controls
-           ========================================= */
+        /* --- LOWER HALF (50%) --- */
         .lower-half {
-            flex: 1; /* Takes remaining 50% */
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -175,12 +158,11 @@
             border-collapse: collapse;
         }
 
-        /* SCALING: Table Header and Cells */
         th, td {
             text-align: center;
-            padding: 15px 5px; /* Increased padding */
+            padding: 12px 5px;
             border-bottom: 1px solid var(--bg-light);
-            font-size: 1.5rem; /* 2x Scale */
+            font-size: 1.4rem;
         }
 
         thead th {
@@ -189,14 +171,16 @@
             background: var(--white);
             z-index: 1;
             color: #6b7280;
-            font-size: 1.2rem; /* Headers slightly smaller than data */
+            font-size: 1rem;
+            text-transform: uppercase;
         }
 
         .row-num {
             font-weight: bold;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f9fafb;
         }
         
         tr.active-row .row-num {
@@ -204,14 +188,14 @@
             color: white;
         }
 
-        /* SCALING: Dropdown */
-        select {
-            padding: 10px;
+        select.rating-dropdown {
+            padding: 8px;
             border-radius: 6px;
             border: 1px solid var(--border);
-            width: 100px; /* Wider */
-            font-size: 1.5rem; /* 2x Scale */
+            width: 80px;
+            font-size: 1.4rem;
             background-color: white;
+            text-align: center;
         }
 
         /* Controls */
@@ -224,14 +208,13 @@
             flex-shrink: 0;
         }
 
-        /* SCALING: Buttons */
         .control-btn {
             flex: 1;
-            padding: 15px; /* Larger touch area */
+            padding: 15px;
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: 10px;
-            font-size: 2rem; /* HUGE buttons */
+            font-size: 2rem;
             font-weight: bold;
             color: var(--primary);
             margin: 0 10px;
@@ -243,33 +226,43 @@
         }
         
         .status-msg {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #6b7280;
             font-weight: 500;
         }
-
     </style>
 </head>
 <body>
 
     <div class="upper-half">
+        
         <div class="top-bar">
-            <div class="box-side">
-                <input type="text" placeholder="Text">
+            <div class="top-item">
+                <select id="eventSelect">
+                    <option value="" disabled selected>Event</option>
+                </select>
             </div>
-            <div class="box-mid">
-                STATUS OK
+            
+            <div class="top-item">
+                <select id="setSelect" disabled>
+                    <option value="" disabled selected>Set</option>
+                </select>
             </div>
-            <div class="box-side">
-                <input type="date">
+            
+            <div class="top-item">
+                <input type="text" id="raterInput" placeholder="Rater">
+            </div>
+            
+            <div class="top-item">
+                <input type="date" id="dateInput">
             </div>
         </div>
 
         <div class="number-scroller" id="topScroller">
             </div>
 
-        <div class="text-display">
-            Select #
+        <div class="text-display" id="mainScreen">
+            Waiting for data...
         </div>
     </div>
 
@@ -280,8 +273,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 30%">ID</th>
-                        <th style="width: 70%">Rate (0-5)</th>
+                        <th style="width: 30%">Chest #</th>
+                        <th style="width: 70%">Rating</th>
                     </tr>
                 </thead>
                 <tbody id="ratingTableBody">
@@ -291,65 +284,68 @@
 
         <div class="controls">
             <button class="control-btn" onclick="adjustRating(-1)">-</button>
-            <span class="status-msg" id="selectedRowMsg">No ID</span>
+            <span class="status-msg" id="selectedRowMsg">Select Chest</span>
             <button class="control-btn" onclick="adjustRating(1)">+</button>
         </div>
     </div>
 
     <script>
         // ***********************************************
-        // CONFIGURATION
+        // CONFIGURATION: PASTE YOUR APP SCRIPT URL HERE
+        const SHEET_API_URL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE"; 
         // ***********************************************
-        // PASTE YOUR GOOGLE WEB APP URL HERE
-        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwOFOpRXvcyKmCREUkBcOHw1auLR5de0f5URQxYhcFWuuDzBu7mR88cO9OFKMtJeSd-/exec"; 
-        // ***********************************************
-    
-        // --- DOM Elements ---
+
+        // DOM Elements
         const eventSelect = document.getElementById('eventSelect');
         const setSelect = document.getElementById('setSelect');
         const topScroller = document.getElementById('topScroller');
         const mainScreen = document.getElementById('mainScreen');
         const tableBody = document.getElementById('ratingTableBody');
         const selectedRowMsg = document.getElementById('selectedRowMsg');
-    
-        // State
-        let sheetData = []; // Now empty, will be filled from web
+
+        // State Variables
+        let sheetData = []; 
         let currentEvent = null;
         let currentSet = null;
         let currentQuestionId = null;
         let selectedChestId = null;
-    
-        // --- INITIALIZATION ---
+
+        // --- Initialization ---
         window.onload = function() {
-            initTable(); // Draw the 1-40 table immediately
-            fetchSheetData(); // Start loading data from Google
+            initTable();      // Draw the 1-40 Chest numbers immediately
+            fetchSheetData(); // Start fetching Google Sheet data
         };
-    
-        // 1. Fetch Data from Google Sheet
+
+        // --- 1. Fetch Data ---
         function fetchSheetData() {
-            mainScreen.textContent = "Loading Data...";
+            mainScreen.textContent = "Loading Questions...";
             
+            // If you don't have the URL yet, this check prevents a crash
+            if(SHEET_API_URL === "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE") {
+                mainScreen.textContent = "Please set SHEET_API_URL in code.";
+                return;
+            }
+
             fetch(SHEET_API_URL)
             .then(response => response.json())
             .then(data => {
                 sheetData = data;
                 populateEventDropdown();
-                mainScreen.textContent = "Select Event";
+                mainScreen.textContent = "Select an Event";
             })
             .catch(error => {
                 console.error('Error:', error);
-                mainScreen.textContent = "Error loading data. Check console.";
+                mainScreen.textContent = "Error loading data.";
             });
         }
-    
-        // 2. Populate Event Dropdown
+
+        // --- 2. Top Panel Logic ---
+        
         function populateEventDropdown() {
-            // Get unique events
+            // Extract unique events from data
             const uniqueEvents = [...new Set(sheetData.map(item => item.event))];
             
-            // Clear old options (keep the default disabled one)
             eventSelect.innerHTML = '<option value="" disabled selected>Event</option>';
-    
             uniqueEvents.forEach(evt => {
                 const opt = document.createElement('option');
                 opt.value = evt;
@@ -357,48 +353,20 @@
                 eventSelect.appendChild(opt);
             });
         }
-    
-        // 3. Initialize Table (Chest Numbers 1-40)
-        function initTable() {
-            for (let i = 1; i <= 40; i++) {
-                const tr = document.createElement('tr');
-                tr.id = `row-${i}`;
-                
-                const tdNum = document.createElement('td');
-                tdNum.innerHTML = `<div class="row-num">${i}</div>`;
-                tdNum.onclick = () => selectChest(i);
-                
-                const tdRate = document.createElement('td');
-                const select = document.createElement('select');
-                select.className = 'rating-dropdown';
-                select.id = `select-${i}`;
-                for(let j=0; j<=5; j++){
-                    const opt = document.createElement('option');
-                    opt.value = j;
-                    opt.textContent = j;
-                    select.appendChild(opt);
-                }
-                tdRate.appendChild(select);
-                tr.appendChild(tdNum);
-                tr.appendChild(tdRate);
-                tableBody.appendChild(tr);
-            }
-        }
-    
-        // --- LOGIC: TOP BAR CASCADING ---
-    
+
+        // Event Selection Change
         eventSelect.addEventListener('change', (e) => {
             currentEvent = e.target.value;
             populateSets(currentEvent);
-            mainScreen.textContent = "Select Set";
-            topScroller.innerHTML = ""; 
+            mainScreen.textContent = "Select a Set";
+            topScroller.innerHTML = ""; // Clear old questions
             setSelect.disabled = false;
-            // Reset Set Dropdown
-            setSelect.value = "";
+            setSelect.value = ""; // Reset set selection
         });
-    
+
         function populateSets(evtName) {
             setSelect.innerHTML = '<option value="" disabled selected>Set</option>';
+            // Filter data by event, then get unique sets
             const relevantRows = sheetData.filter(d => d.event === evtName);
             const uniqueSets = [...new Set(relevantRows.map(d => d.set))];
             
@@ -409,13 +377,14 @@
                 setSelect.appendChild(opt);
             });
         }
-    
+
+        // Set Selection Change
         setSelect.addEventListener('change', (e) => {
             currentSet = e.target.value;
             populateQuestions(currentEvent, currentSet);
             mainScreen.textContent = "Select Question #";
         });
-    
+
         function populateQuestions(evt, set) {
             topScroller.innerHTML = ""; 
             
@@ -426,37 +395,74 @@
                 div.className = 'scroll-item';
                 div.textContent = q.id;
                 div.onclick = function() {
-                    // Visuals
+                    // UI: Highlight selected question
                     document.querySelectorAll('.scroll-item').forEach(el => el.classList.remove('selected'));
                     this.classList.add('selected');
                     
-                    // Logic
+                    // Logic: Show text
                     currentQuestionId = q.id;
                     updateScreenText(q.text);
                 };
                 topScroller.appendChild(div);
             });
         }
-    
+
         function updateScreenText(text) {
             mainScreen.textContent = text;
         }
-    
-        // --- LOGIC: TABLE SELECTION & RATING ---
-    
+
+        // --- 3. Table & Rating Logic ---
+
+        function initTable() {
+            for (let i = 1; i <= 40; i++) {
+                const tr = document.createElement('tr');
+                tr.id = `row-${i}`;
+                
+                // Column 1: Chest Number
+                const tdNum = document.createElement('td');
+                tdNum.innerHTML = `<div class="row-num">${i}</div>`;
+                tdNum.onclick = () => selectChest(i);
+                
+                // Column 2: Rating Dropdown
+                const tdRate = document.createElement('td');
+                const select = document.createElement('select');
+                select.className = 'rating-dropdown';
+                select.id = `select-${i}`;
+                // Options 0 to 5
+                for(let j=0; j<=5; j++){
+                    const opt = document.createElement('option');
+                    opt.value = j;
+                    opt.textContent = j;
+                    select.appendChild(opt);
+                }
+                tdRate.appendChild(select);
+
+                tr.appendChild(tdNum);
+                tr.appendChild(tdRate);
+                tableBody.appendChild(tr);
+            }
+        }
+
         function selectChest(id) {
             selectedChestId = id;
             document.querySelectorAll('tr').forEach(row => row.classList.remove('active-row'));
             document.getElementById(`row-${id}`).classList.add('active-row');
             selectedRowMsg.textContent = `Chest #${id}`;
         }
-    
+
         function adjustRating(change) {
-            if (!selectedChestId) return;
-    
+            if (!selectedChestId) {
+                // Flash the message to indicate error
+                selectedRowMsg.style.color = 'red';
+                setTimeout(() => selectedRowMsg.style.color = '#6b7280', 500);
+                return;
+            }
+
             const dropdown = document.getElementById(`select-${selectedChestId}`);
             let currentVal = parseInt(dropdown.value);
             let newVal = currentVal + change;
+
+            // Clamp between 0 and 5
             if (newVal >= 0 && newVal <= 5) {
                 dropdown.value = newVal;
             }
